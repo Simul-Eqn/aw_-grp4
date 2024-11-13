@@ -1,6 +1,7 @@
 import flet as ft 
 import firebase_handler as fh 
 import colours 
+import logging
 
 from elements import * 
 
@@ -237,3 +238,34 @@ def app(page:ft.Page):
 
 ft.app(target=app) 
 
+#handle's errors
+#
+def handle_error(err):
+    if isinstance(err, Exception):
+        message = str(err)
+        logging.error(f'firebase error: {error_message}')
+        if "auth/invalid-email" in error_message:
+            return{'error_code':'Invalid_email',
+                   'message': 'Invlaid email format',
+                   'suggestion': 'please check email format'
+            }
+        elif 'auth/email-already-in-use' in error_message:
+            return{'error_code':'Email_in_use',
+                   'message': 'Email_alreday_registered',
+                   'suggestion': 'Use different email'
+            }
+        elif 'auth/wrong-password' in error_message:
+            return{'error_code':'wrong_password',
+                   'message': 'Incorrect password',
+                   'suggestion': 'Try again with correct password'
+                    }
+        elif 'auth/user-not-found' in error_message:
+            return{'error_code':'User not found',
+                   'message': 'no user found with this email',
+                   'suggestion': 'please check email or register'
+            }
+        else:
+            return{'error_code':'Unknown_error',
+                   'message': f'unknown error occured{error_message}',
+                   'suggestion': 'please contact support'
+            }
