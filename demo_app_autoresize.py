@@ -1,8 +1,6 @@
 import flet as ft 
 import firebase_handler as fh 
 import colours 
-import logging
-import re
 
 from elements import * 
 
@@ -25,7 +23,7 @@ def debug_print(*args, **kwargs):
 # TODO: allow forget password / password reset or smtg, maybe enable more login options 
 
 # login page
-def login_page(page:ft.Page, email_onchange=lambda x:None, password_onchance=lambda x:None, clean_page=True):
+def login_page(page:ft.Page, nextpage, email_onchange=lambda x:None, password_onchance=lambda x:None, clean_page=True):
     debug_print("LOGIN PAGE") 
 
     if clean_page: 
@@ -41,13 +39,13 @@ def login_page(page:ft.Page, email_onchange=lambda x:None, password_onchance=lam
     appname_label = AutoResizeText('Freelance Nursing App', width=page.window.width-60, height=50, text_kwargs={'max_lines': 1})
 
     # i did a whole bunch of nonsense to get the text to resize itself but this all doesn't work :( 
-    '''def adjsize_appname_label(): 
+    def adjsize_appname_label(): 
         #print(appname_label.size)
         if appname_label.width > 260: 
             appname_label.size(appname_label.size-1)
             page.update() 
             return True 
-        return False '''
+        return False 
     #onend_fns.append(adjsize_appname_label) 
     
 
@@ -92,15 +90,16 @@ def login_page(page:ft.Page, email_onchange=lambda x:None, password_onchance=lam
             # SUCCESS! 
             global current_user 
             current_user = res 
-
+            
             # delete local variables to save memory 
             for v in list(locals().keys()): 
+                if (v == 'nextpage'): continue 
                 try: 
                     delattr(sys.modules[__name__], v) 
                 except Exception as e: 
                     print(e) 
 
-            return "dashboard"
+            nextpage() 
 
     
     def handle_login(e): 
@@ -121,8 +120,7 @@ def login_page(page:ft.Page, email_onchange=lambda x:None, password_onchance=lam
             # SUCCESS! 
             global current_user 
             current_user = res 
-            
-            return "homepage" 
+            nextpage() 
     
     # buttons 
     signup_btn = ft.ElevatedButton("Sign Up", width=100, on_click=handle_signup, 
@@ -151,7 +149,7 @@ def login_page(page:ft.Page, email_onchange=lambda x:None, password_onchance=lam
     page.update() 
 
 
-    '''def run_onend_fns(onend_fns): 
+    def run_onend_fns(onend_fns): 
         print("RUNNING")
         print(len(onend_fns))
         while True: 
@@ -168,12 +166,12 @@ def login_page(page:ft.Page, email_onchange=lambda x:None, password_onchance=lam
                     new_onend_fns.append(of) 
             onend_fns = new_onend_fns 
 
-    tpe = ThreadPoolExecutor(1) ''' 
+    tpe = ThreadPoolExecutor(1) 
     #tpe.submit(run_onend_fns, onend_fns) 
     #tpe.submit(lambda:tpe.shutdown()) 
 
 
-def dashboard_page(page:ft.Page, clean_page=True): 
+def dashboard_page(page:ft.Page, pageback, clean_page=True): 
     debug_print("DASHBOARD PAGE")
 
     if clean_page: 
@@ -184,12 +182,11 @@ def dashboard_page(page:ft.Page, clean_page=True):
         global current_user 
         current_user = None # delete it 
 
-        # delete local variables to save memory - unnecessary now since we have better navigation 
+        # delete local variables to save memory 
         for v in list(locals().keys()): 
             if (v == 'nextpage'): continue 
             delattr(sys.modules[__name__], v) 
-        
-        return 'login' 
+        pageback() 
         
 
     # quick basic UI 
@@ -222,64 +219,29 @@ def app(page:ft.Page):
 
     global current_user 
     current_user = None 
+    
+    def show_login_page(): # funny stuff to make the syntax work 
+        login_page(page, lambda:dashboard_page(page, show_login_page)) 
+    
 
-    nextpage = "login"
-    while True: 
-        if nextpage == 'login': 
-            nextpage = login_page(page, clean_page=True) 
-        elif nextpage == 'dashboard': 
-            nextpage = dashboard_page(page, True) 
-        else: 
-            print("CAN'T DISPLAY PAGE NAMED {}".foramt(nextpage)) 
-            break 
 
-        
+    show_login_page() 
 
 
 
 ft.app(target=app) 
 
-#handle's errors
-
-def validate_email(email):
-    if '@' not in email or '.' not in email:
-        return False
-    return True
-
-def validate_phone(phone):
-    cleaned_phone = re.sub(r'\D', '', phone)
-    if len(cleaned_phone) != 8:
-        return False
-    return True
-
-
-
-def handle_error(err):
-    if isinstance(err, Exception):
-        message = str(err)
-        logging.error(f'firebase error: {error_message}')
-        if "auth/invalid-email" in error_message:
-            return{'error_code':'Invalid_email',
-                   'message': 'Invlaid email format',
-                   'suggestion': 'please check email format'
-            }
-        elif 'auth/email-already-in-use' in error_message:
-            return{'error_code':'Email_in_use',
-                   'message': 'Email_alreday_registered',
-                   'suggestion': 'Use different email'
-            }
-        elif 'auth/wrong-password' in error_message:
-            return{'error_code':'wrong_password',
-                   'message': 'Incorrect password',
-                   'suggestion': 'Try again with correct password'
-                    }
-        elif 'auth/user-not-found' in error_message:
-            return{'error_code':'User not found',
-                   'message': 'no user found with this email',
-                   'suggestion': 'please check email or register'
-            }
-        else:
-            return{'error_code':'Unknown_error',
-                   'message': f'unknown error occured{error_message}',
-                   'suggestion': 'please contact support'
-            }
+#on-register or signup code:
+    def on_register_click():
+        page.go("/signup") #or nextpage?
+        #show_register_page() ???? save me simu 
+        name_label=ft.Text('Name: ')
+        name_in = ft.TextField(hint_text="name", width=150, on_change=name_onchange) 
+        name_row = ft.Row([name_label, name_in], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, 
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER, width=260) 
+        
+        email_label = ft.Text('Email: ') 
+        email_in = ft.TextField(hint_text="email", width=150, on_change=email_onchange) 
+        email_row = ft.Row([email_label, email_in], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, 
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER, width=260) 
+        
