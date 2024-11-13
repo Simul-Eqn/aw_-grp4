@@ -248,8 +248,9 @@ def validate_email(email):
 
 def validate_phone(phone):
     cleaned_phone = re.sub(r'\D', '', phone)
-    if len(clean_phone) != 8:
+    if len(cleaned_phone) != 8:
         return False
+    return True
 
 
 
