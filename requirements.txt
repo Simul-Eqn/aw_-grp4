@@ -2,3 +2,5 @@ flet
 firebase_admin
 pyrebase4
 pycryptodome
+colorutils
+fuzzywuzzy
