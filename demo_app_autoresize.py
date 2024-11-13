@@ -2,6 +2,7 @@ import flet as ft
 import firebase_handler as fh 
 import colours 
 import logging
+import re
 
 from elements import * 
 
@@ -239,7 +240,19 @@ def app(page:ft.Page):
 ft.app(target=app) 
 
 #handle's errors
-#
+
+def validate_email(email):
+    if '@' not in email or '.' not in email:
+        return False
+    return True
+
+def validate_phone(phone):
+    cleaned_phone = re.sub(r'\D', '', phone)
+    if len(clean_phone) != 8:
+        return False
+
+
+
 def handle_error(err):
     if isinstance(err, Exception):
         message = str(err)
