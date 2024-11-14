@@ -4,3 +4,8 @@ pyrebase4
 pycryptodome
 colorutils
 fuzzywuzzy
+beautifulsoup4
+requests 
+nltk 
+gensim 
+pandas
