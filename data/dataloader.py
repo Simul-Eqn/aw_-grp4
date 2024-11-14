@@ -5,6 +5,9 @@ import numpy as np
 
 import word2vec 
 
+from fuzzywuzzy import process, fuzz # matching constituency 
+
+
 # categorical variable: constituency 
 # get constituencies 
 def _get_constituencies(): 
@@ -23,8 +26,18 @@ def _get_constituencies():
 
     # df 
     df = pd.DataFrame(rows, columns=headers)
-    
-    return [c.lower() for c in df['Constituency'].values.tolist()  ]
+
+    # since "Wards" has multiple rows per constituency, there's some odd formatting so we have to do this 
+    return [c.lower() for c in df[~df['Wards'].isna()]['Constituency'].values.tolist()] 
+
+constituency_approximate_distances = [6, 10, 4.5, 20, 13.5, 7, 1.5, 19, 9.5, 17, 7.5, 19, 17.5, 11, 14, 3.5, 11]
+
+def constituency_to_dist(con, constituencies=_get_constituencies()): 
+    con = process.extract(con, constituencies, scorer=fuzz.partial_ratio) 
+    idx = np.argmax(con) 
+    print("MATCHING '{}' WITH '{}'".format(con, constituencies[idx])) 
+    return constituency_approximate_distances[idx] 
+
 
 # TODO, but NOT NECESSARY TO IMPLEMENT THOUGH 
 def _postalcode_to_constituency(postalcode): # utility function? 
@@ -127,9 +140,13 @@ def load_data():
 
 
     # singapore constituency 
-    # uhhh do we make this one-hot and categorical??? 
-    # oh actl what if we take the centroid distance to Farrer Park Hospital? 
-    # TODO 
+    # approximate distance to Farrer Park Hospital, with ChatGPT (not completely reliable but we did a quick check and it makes some sense)
+    constituencies = _get_constituencies() 
+    dists = [] 
+    for con in raw_df['Postal Code ']: 
+        dists.append(constituency_to_dist(con, constituencies)) 
+    data['dist'] = dists # distance to Farrer Park Hospital 
+
 
 
     # this fields shld probably be dealt with outside the model 
