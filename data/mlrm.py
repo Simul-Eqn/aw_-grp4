@@ -7,6 +7,12 @@ import pickle
 
 
 class MLRM(): 
+	default_x_cols = ['singaporean', 'race_chinese', 'race_malay', 'race_others',
+       'female', 'dist', 'IPSICU_match'] 
+	
+	default_y_col = 'rating' 
+
+
 	def __init__(self, save_path:str=None): 
 		if save_path is not None: 
 			# load trained model 
@@ -24,14 +30,19 @@ class MLRM():
 
 		self.lm = LinearRegression() 
             
-	def train(self, df=load_data(), train_cols = ['name', 'singaporean', 'race_chinese', 'race_malay', 'race_others',
-       'female', 'dist', 'IPSICU_match'], test_col = 'rating'): 
+	def train(self, df=load_data(), x_cols = None, y_col = None): 
 
 		if self.trained: 
 			print("WARNING: self.trained is already True, still trying to re-train model!") 
 
-		x = df[train_cols] 
-		y = df[test_col] 
+		if x_cols is None: 
+			x_cols = MLRM.default_x_cols 
+		
+		if y_col is None: 
+			y_col = MLRM.default_y_col 
+
+		x = df[x_cols] 
+		y = df[y_col] 
 
 
 		self.lm.fit(x, y) 
@@ -51,3 +62,13 @@ class MLRM():
 			pickle.dump(self.lm, f)
 
 
+
+if __name__=='__main__': 
+	mlrm = MLRM('mlrm.pkl') # try loading the model 
+	if not mlrm.trained: 
+		print("NOT TRAINED (failed to load) - will train") 
+		mlrm.train() # train 
+		mlrm.save('mlrm.pkl') # save 
+
+	out = mlrm.predict(load_data().loc[[0], MLRM.default_x_cols]) 
+	print("OUTPUT:", out, "(TYPE: {})".format(str(type(out)))) 

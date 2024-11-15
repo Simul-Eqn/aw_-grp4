@@ -2,3 +2,4 @@ nursedataset.csv
 GoogleNews-vectors-negative300.bin
 cleaned_nursedf.csv
 job_data.txt
+mlrm.pkl
