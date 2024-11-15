@@ -3,24 +3,26 @@ from model import Model
 import numpy as np
 import matplotlib.pyplot as plt
 from adjustText import adjust_text
+from annoy import AnnoyIndex 
 
 class KNN(Model):
-    def __init__(self, df, save_path = None, features = 7, distance = "manhattan", num_trees = 5): 
+    def __init__(self, df, save_path = None, features = 7, distance = "manhattan", num_trees = 5, k=5): 
         self.trained = (save_path is not None)
         self.df = df
         self.features = features
         self.distance = distance
         self.num_trees = 5
         self.model = AnnoyIndex(self.features, self.distance)
+        self.k = k 
 
         if save_path is not None: 
 			# load trained model 
-			self.trained = True
-			try: 
+            self.trained = True
+            try: 
                 self.model.load(save_path)
-				return # done initializing 
-			except Exception as e: 
-				print("UNABLE TO LOAD MODEL FROM {}, MAKING NEW MODEL".format(save_path))
+                return # done initializing 
+            except Exception as e: 
+                print("UNABLE TO LOAD MODEL FROM {}, MAKING NEW MODEL".format(save_path))
         self.trained = False
 
 
@@ -38,16 +40,20 @@ class KNN(Model):
         return vectors
         
 
-    def predict(self, index, k, df=None):
+    def predict(self, x, k=None, df=None):
         if df is None:
             df = self.df
-        nearest_k = self.model.get_nns_by_item(index, k) # getting k nearest neighbors
+        if k is None: 
+            k = self.k 
+        
+        nearest_k = self.model.get_nns_by_vector(x, k) # getting k nearest neighbors
         
         # getting ratings of all k nearest neighbors
         ratings = []
         for i in nearest_k:
             ratings.append(df.iloc[i][Model.default_y_col])
         return np.mean(ratings) # return mean rating of k nearest neighbors
+
 
     def visualize(self, vectors, df=None):
         if df is None:
@@ -59,8 +65,7 @@ class KNN(Model):
             3: 'tab:green',
             4: 'tab:red',
             5: 'tab:orange'
-        }        
-        vec_get_color = np.vectorize(lamba x:col_dict[int(x)])
+        } 
 
         # make sure TSNE is trained on numpy array
         if not isinstance(vectors, np.ndarray):

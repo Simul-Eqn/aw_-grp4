@@ -1,4 +1,4 @@
-default_model_path = './torchmodels/torchmodel_epoch05.pt'
+default_model_path = './torchmodels/saved2_torchmodel_epoch500.pt'
 
 import torch
 from torch_model import TorchModel 

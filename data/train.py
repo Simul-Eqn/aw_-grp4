@@ -5,6 +5,7 @@ import torch
 from model import Model 
 from torch_model import TorchModel 
 from mlrm import MLRM 
+from KNN import KNN 
 from dtree import DecisionTree 
 
 from dataloader import load_data 
@@ -24,8 +25,8 @@ if torch.cuda.is_available():
 
 
 
-epochs = 10 
-iters_per_epoch = 10 
+epochs = 500 
+iters_per_epoch = 150 
 
 
 
@@ -43,7 +44,7 @@ except:
 gt_data = load_data() 
 
 
-teacher_models = [MLRM(), DecisionTree()] 
+teacher_models = [MLRM('mlrm.pkl'), DecisionTree('dtree.pkl'), KNN(gt_data, 'knn.pkl')] 
 
 # train teachers 
 i = 0 
@@ -55,7 +56,8 @@ for teacher in teacher_models:
 
 # final model 
 model = TorchModel(device=device) 
-optimizer = torch.optim.AdamW(params=model.parameters(), lr=1e-4)
+optimizer = torch.optim.AdamW(params=model.parameters(), lr=0.00013)
+lrscheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.981)
 mseloss = torch.nn.MSELoss() 
 
 x_cols = ['singaporean', 'race_chinese', 'race_malay', 'race_others', 'female', 'dist', 'IPSICU_match'] 
@@ -108,7 +110,10 @@ for epoch in range(1, 1+epochs):
 
         ress = [] 
         for teacher in teacher_models: 
-            ress.append(teacher.predict(reshaped_sample)[0]) 
+            if isinstance(teacher, KNN): 
+                ress.append(teacher.predict(sample))
+            else: 
+                ress.append(teacher.predict(reshaped_sample)[0]) 
         ans = round(np.mean(ress)) # this is the number 
         ans = min(max(ans, 0), 5) 
         #ans_arr = np.zeros(6) 
@@ -128,11 +133,16 @@ for epoch in range(1, 1+epochs):
 
     if epoch%5 == 0: 
         tl, ta, tp = test(epoch) 
+
+
+        if (epoch==5) or (ta > max(test_accuracies)) or (tl < min(test_losses)): # if it performs better in some way 
+            torch.save(model.state_dict(), './torchmodels/torchmodel_epoch{:02d}.pt'.format(epoch))
+
         test_losses.append(tl) 
         test_accuracies.append(ta) 
         test_preds.append(tp) 
 
-        torch.save(model, './torchmodels/torchmodel_epoch{:02d}.pt'.format(epoch))
+    lrscheduler.step() 
 
 
 
@@ -153,11 +163,12 @@ ax1.plot(test_xs, test_losses, color='tab:blue', label='Test')
 
 ax2.plot(test_xs, test_accuracies, color='tab:red')
 
-ax1.set_ylabel('CrossEntropy Loss', color='tab:blue') 
+ax1.set_ylabel('MSE Loss', color='tab:blue') 
 ax2.set_ylabel('Accuracy', color='tab:red')
 
 
-plt.legend() 
+ax1.legend() 
+
 plt.show() 
 
 
