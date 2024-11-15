@@ -7,6 +7,7 @@ import numpy as np
 import nltk
 nltk.download('stopwords')
 nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('omw-1.4')
 nltk.download('wordnet')
 #import gensim
