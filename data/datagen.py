@@ -33,7 +33,7 @@ def data_generator(return_dict=True, x_cols=['singaporean', 'race_chinese', 'rac
                 elif col in ['female', 'recommend', 'IPSICU_match']: # these have high chance of being True 
                     d.append(int(random.random() > 0.8)) 
                 elif 'race' in col: 
-                    d.append(eval('race == "{}"'.format(col[5:]), locals())) 
+                    d.append(int(eval('race == "{}"'.format(col[5:]), locals()))) 
             elif col == 'dist': 
                 d.append(random.gauss(dist_mean, dist_std)) 
             else: 
@@ -66,7 +66,15 @@ if __name__=='__main__':
     # just in case 
     if not model.trained: 
         model.train() 
-
+    
+    print("DF") 
     print(model.predict(df)) 
 
+    # see if this other way of geenrating data works 
+    import numpy as np 
+    g = data_generator(False) 
+    print("list datagen")
+    print(np.array(next(g)).shape)
+    print(model.predict(np.array(next(g)).reshape(1, 7))) 
+    
 

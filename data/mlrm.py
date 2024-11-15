@@ -1,12 +1,14 @@
 from dataloader import load_data 
+from model import Model 
 
 from sklearn.linear_model import LinearRegression 
 import pickle 
 
+import numpy as np 
 
 
 
-class MLRM(): 
+class MLRM(Model): 
 	default_x_cols = ['singaporean', 'race_chinese', 'race_malay', 'race_others', 'female', 'dist', 'IPSICU_match'] 
 	
 	default_y_col = 'rating' 
@@ -29,7 +31,9 @@ class MLRM():
 
 		self.lm = LinearRegression() 
             
-	def train(self, df=load_data(), x_cols = None, y_col = None): 
+	def train(self, df=load_data(), x_cols = None, y_col = None, seed=None): 
+		if seed is not None: # set seed 
+			np.random.seed(10) # set seed for sklearn 
 
 		if self.trained: 
 			print("WARNING: self.trained is already True, still trying to re-train model!") 
@@ -49,7 +53,11 @@ class MLRM():
 		self.trained = True 
 
 	def predict(self, x): 
-		return self.lm.predict(x) 
+		res = self.lm.predict(x) 
+		# make sure it's max 5, min 0 
+		res = np.where(res>0, res, 0) 
+		res = np.where(res<5, res, 5) 
+		return res 
 
 	def save(self, save_path:str='mlrm.pkl'): 
 		
