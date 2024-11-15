@@ -101,3 +101,5 @@ def flask_get_score():
 
     return Response(str(get_score(nurse_df, required_skill, required_specialization)), 200)
 
+if __name__=='__main__': 
+    app.run(host='0.0.0.0', port=5000, debug=True)
