@@ -9,9 +9,6 @@ import numpy as np
 
 
 class MLRM(Model): 
-	default_x_cols = ['singaporean', 'race_chinese', 'race_malay', 'race_others', 'female', 'dist', 'IPSICU_match'] 
-	
-	default_y_col = 'rating' 
 
 
 	def __init__(self, save_path:str=None): 
@@ -33,16 +30,18 @@ class MLRM(Model):
             
 	def train(self, df=load_data(), x_cols = None, y_col = None, seed=None): 
 		if seed is not None: # set seed 
-			np.random.seed(10) # set seed for sklearn 
+			seed = 10 
+
+		np.random.seed(seed) # set seed for sklearn 
 
 		if self.trained: 
 			print("WARNING: self.trained is already True, still trying to re-train model!") 
 
 		if x_cols is None: 
-			x_cols = MLRM.default_x_cols 
+			x_cols = Model.default_x_cols 
 		
 		if y_col is None: 
-			y_col = MLRM.default_y_col 
+			y_col = Model.default_y_col 
 
 		x = df[x_cols] 
 		y = df[y_col] 
