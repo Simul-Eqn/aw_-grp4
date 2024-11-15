@@ -299,7 +299,6 @@ class Dataloader():
     def __init__(self): 
         self.data = load_data() 
     
-    # TODO match data loading format for sklearn or tf/pytorch, whichever we are using 
 
 
 if __name__ == '__main__': 

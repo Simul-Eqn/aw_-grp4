@@ -4,6 +4,8 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import pickle 
 
+import matplotlib.pyplot as plt 
+
 #import matplotlib.pyplot as plt
 
 from model import Model 
@@ -60,12 +62,16 @@ class DecisionTree(Model):
         with open(save_path,'wb') as f:
             pickle.dump(self.dtree, f)
 
+    def visualize(self): 
+        tree.plot_tree(dt.dtree, feature_names=Model.default_x_cols)
+
+        plt.show() 
+
 
 
 if __name__=='__main__': 
-    import matplotlib.pyplot as plt 
 
-    dt = DecisionTree(None) 
+    dt = DecisionTree() 
 
     dt.train() 
 
@@ -73,13 +79,12 @@ if __name__=='__main__':
     from datagen import data_generator 
     gen = data_generator(return_dict=False) 
 
+    dt.save('dtree.pkl')
+
     for _ in range(10): 
         d = next(gen) 
         res = dt.predict(np.array(d).reshape(1,7)) # will give a warning as we didn't put a name but we can silence it 
         print(res) 
 
 
-
-    tree.plot_tree(dt.dtree, feature_names=Model.default_x_cols)
-
-    plt.show() 
+    dt.visualize() 
