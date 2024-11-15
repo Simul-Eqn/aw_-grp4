@@ -150,7 +150,7 @@ def load_data(save_path='cleaned_nursedf.csv'):
     # let's use one-hot encoding 
     data['race_chinese'] = vec_int(raw_df['Race']=='Chinese') 
     data['race_malay'] = vec_int(raw_df['Race']=='Malay') 
-    data['race_others'] = vec_int( (raw_df['Race']!='Chinese') & (raw_df['Race']=='malay') ) 
+    data['race_others'] = vec_int( (raw_df['Race']!='Chinese') & (raw_df['Race']=='Malay') ) 
 
     # gender - let 1 be female, 0 be male 
     data['female'] = vec_int(raw_df['Gender']=='Female') 
@@ -227,6 +227,57 @@ def load_data(save_path='cleaned_nursedf.csv'):
 
     # recommend to rehire 
     data['recommend'] = vec_int(raw_df['Recommend to Rehire\n (Yes/No)'].str.lower().str.contains('yes')) 
+
+
+
+
+    # now let's add from nurse_moredata.csv 
+    moredf = pd.read_csv('nurse_moredata.csv')
+    data['name'] = np.concatenate([data['name'].values, moredf['Name'].values]) 
+    data['singaporean'] = np.concatenate([data['singaporean'], vec_int(moredf['Singaporean']=='Yes')])
+    data['race_chinese'] = np.concatenate([data['race_chinese'], vec_int(moredf['Race']=='Chinese')])
+    data['race_malay'] = np.concatenate([data['race_malay'], vec_int(moredf['Race']=='Malay')]) 
+    data['race_others'] = np.concatenate([data['race_others'], vec_int( (moredf['Race']!='Chinese') & (moredf['Race']=='Malay') )]) 
+    data['female'] = np.concatenate([data['female'], vec_int(moredf['Gender']=='Female')]) 
+    
+    # experience and speicalization be np.NaN
+    for epidx in range(len(experience_possibilities)): 
+        a = 'experience_{}'.format(experience_names[epidx])
+        temp = np.empty((len(moredf)))
+        temp[:] = np.nan 
+        data[a] = np.concatenate([data[a], temp]) 
+
+    for nidx in range(len(job_df['name'])): 
+        a = 'special_{}'.format(job_df.loc[nidx, 'name']) 
+        temp = np.empty((len(moredf)))
+        temp[:] = np.nan 
+        data[a] = np.concatenate([data[a], temp])
+
+    
+    # dist 
+    data['dist'] = np.concatenate([data['dist'], moredf['Distance (km)'].values])
+
+    # IPS/ICU match 
+    data['IPSICU_match'] = np.concatenate([data['IPSICU_match'], vec_int(moredf['Preferred Ward']==moredf['Assigned Ward'])])
+
+    # rating 
+    data['rating'] = np.concatenate([data['rating'], moredf['Performance (0-5)'].values]) 
+    
+    # supervisor's comments - this is not like an int/float 
+    temp = np.empty((len(moredf)))
+    temp[:] = np.nan 
+    data['comments'] = np.concatenate([data['comments'].values, temp])#raw_df['Comments on \n Locum Perfomance'] 
+
+    # recommend to rehire 
+    data['recommend'] = np.concatenate([data['recommend'], temp])
+
+
+    #print("AAAA")
+    #for k, v in data.items(): 
+    #    print(len(v)) 
+
+    #print(data)
+
 
     return pd.DataFrame(data) 
 # useful fields are going to be like 
