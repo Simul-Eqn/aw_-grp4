@@ -105,7 +105,7 @@ experience_possibilities = ['Nursing Home / Community Treatment facility',
  'Day ward'] 
 experience_names = ['nurshingHome', 'emergencyClinic', 'ICU', 'nursery', 'dayWard'] 
 
-def load_data(save_path=None): 
+def load_data(save_path='cleaned_nursedf.csv'): 
     if save_path is not None: 
         # just load from it save path! 
         try: 
@@ -120,6 +120,16 @@ def load_data(save_path=None):
     raw_df.columns = pd.Series([a[0].split('-')[0] if 'Unnamed' in a[1] else a[1] for a in raw_df.columns.values]) 
     
     raw_df = raw_df.drop(0, axis=0).reset_index().drop('index', axis=1) # ignore the first row of mandatory / non-mandatory fields 
+
+    # remove duplicate names 
+    prev = '' 
+    idxs = [] 
+    for nidx in range(len(raw_df['Name \n (as per NRIC) '])): 
+        name = raw_df.loc[nidx, 'Name \n (as per NRIC) ']
+        if name == prev: continue 
+        prev = name 
+        idxs.append(nidx) 
+    raw_df = raw_df.loc[idxs].reset_index().drop('index', axis=1) 
 
 
     global word2vec 
@@ -195,15 +205,15 @@ def load_data(save_path=None):
     # preference for Inpatient Ward / ICU 
     # IPS/ICU 
     # let's make it a bool, true if ICU 
-    data['ICU'] = vec_int(raw_df['Inpatient Ward(IPS)/ Intensive Care (ICU)']=='ICU') 
+    data_ICU = vec_int(raw_df['Inpatient Ward(IPS)/ Intensive Care (ICU)']=='ICU') 
 
     # assigned department 
     # either IPS or an ICU...
-    data['assigned_ICU'] = vec_int(raw_df['Assigned Department'].str.contains('ICU')) 
+    data_assigned_ICU = vec_int(raw_df['Assigned Department'].str.contains('ICU')) 
 
 
     # IN THE MODEL, IT SHLD JUST BE A BOOL OF WHETHER IT IS CORRECT ASSIGNED DEPARTMENT OR NOT 
-    data['IPSICU_match'] = vec_int(data['ICU'] == data['assigned_ICU']) 
+    data['IPSICU_match'] = vec_int(data_ICU == data_assigned_ICU) 
 
 
     # assigned supervisor... probably not. 
@@ -236,13 +246,13 @@ class Dataloader():
         return Dataloader.constituencies[idx] 
     
     def __init__(self): 
-        self.data = load_data('cleaned_nursedf.csv') 
+        self.data = load_data() 
     
     # TODO match data loading format for sklearn or tf/pytorch, whichever we are using 
 
 
 if __name__ == '__main__': 
-    df = load_data()
+    df = load_data(save_path=None)
     df.to_csv('cleaned_nursedf.csv')
 
 
