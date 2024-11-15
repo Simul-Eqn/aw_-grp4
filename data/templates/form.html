@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Form</title>
+</head>
+<body>
+    <h1>Nurse Information Form</h1>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="citizenship">Singaporean Citizenship Status:</label>
+        <select id="citizenship" name="citizenship" required>
+            <option value="Singaporean">Singaporean</option>
+            <option value="Non-Singaporean">Non-Singaporean (Incuding PR)</option>
+        </select><br><br>
+
+        <label for="race">Race:</label>
+        <select id="race" name="race" required>
+            <option value="Chinese">Chinese</option>
+            <option value="Malay">Malay</option>
+            <option value="Others">Others</option>
+        </select><br><br>
+
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="Female">Female</option>
+            <option value="Male">Male</option>
+        </select><br><br>
+
+        <label for="experience">Experience:</label>
+        <select id="experience" name="experience" required>
+            <option value="Nursing Home / Community Treatment facility">Nursing Home / Community Treatment facility</option>
+            <option value="Emergency Clinic">Emergency Clinic</option>
+            <option value="Intensive care unit">Intensive care unit</option>
+            <option value="Neonatal ICU / Nursery">Neonatal ICU / Nursery</option>
+            <option value="Day ward">Day ward</option>
+        </select><br><br>
+
+        <label for="specialty">Specialty:</label>
+        <input type="text" id="specialty" name="specialty" required><br><br>
+
+        <label for="constituency">Constituency:</label>
+        <select id="constituency" name="constituency" required>
+            <option value="aljunied group representation constituency">Aljunied Group Representation Constituency</option>
+            <option value="ang mo kio group representation constituency">Ang Mo Kio Group Representation Constituency</option>
+            <option value="bishan–toa payoh group representation constituency">Bishan–Toa Payoh Group Representation Constituency</option>
+            <option value="chua chu kang group representation constituency">Chua Chu Kang Group Representation Constituency</option>
+            <option value="east coast group representation constituency">East Coast Group Representation Constituency</option>
+            <option value="holland–bukit timah group representation constituency">Holland–Bukit Timah Group Representation Constituency</option>
+            <option value="jalan besar group representation constituency">Jalan Besar Group Representation Constituency</option>
+            <option value="jurong group representation constituency">Jurong Group Representation Constituency</option>
+            <option value="marine parade group representation constituency">Marine Parade Group Representation Constituency</option>
+            <option value="marsiling–yew tee group representation constituency">Marsiling–Yew Tee Group Representation Constituency</option>
+            <option value="nee soon group representation constituency">Nee Soon Group Representation Constituency</option>
+            <option value="pasir ris–punggol group representation constituency">Pasir Ris–Punggol Group Representation Constituency</option>
+            <option value="sembawang group representation constituency">Sembawang Group Representation Constituency</option>
+            <option value="sengkang group representation constituency">Sengkang Group Representation Constituency</option>
+            <option value="tampines group representation constituency">Tampines Group Representation Constituency</option>
+            <option value="tanjong pagar group representation constituency">Tanjong Pagar Group Representation Constituency</option>
+            <option value="west coast group representation constituency">West Coast Group Representation Constituency</option>
+        </select><br><br>
+
+        <label for="preferred_ICU">Prefer working in ICU or IPS:</label>
+        <select id="preferred_ICU" name="preferred_ICU" required>
+            <option value="ICU">ICU</option>
+            <option value="IPS">IPS</option>
+        </select><br><br>
+
+        <label for="assigned_ICU">Assigned to working in ICU or IPS:</label>
+        <select id="assigned_ICU" name="assigned_ICU" required>
+            <option value="ICU">ICU</option>
+            <option value="IPS">IPS</option>
+        </select><br><br>
+
+        <label for="required_skill">Required skill for job:</label>
+        <select id="required_skill" name="required_skill" required>
+            <option value="Nursing Home / Community Treatment facility">Nursing Home / Community Treatment facility</option>
+            <option value="Emergency Clinic">Emergency Clinic</option>
+            <option value="Intensive care unit">Intensive care unit</option>
+            <option value="Neonatal ICU / Nursery">Neonatal ICU / Nursery</option>
+            <option value="Day ward">Day ward</option>
+        </select><br><br>
+
+        <label for="required_specialization">Required skill for job:</label>
+        <select id="required_specialization" name="required_specialization" required>
+            <option value="Podiatrist">Podiatrist</option>
+            <option value="Psychology">Psychology</option>
+            <option value="Eye">Orthoptist</option>
+            <option value="Critical care nurse">Critical care nurse</option>
+            <option value="Paediatrics">Paediatrics</option>
+            <option value="Occupational therapist">Occupational therapist</option>
+            <option value="Dietitian">Dietitian</option>
+            <option value="Physiotherapist">Physiotherapist</option>
+            <option value="Diagnostic Radiographer">Diagnostic Radiographer</option>
+        </select><br><br>
+
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
