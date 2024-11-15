@@ -5,6 +5,7 @@ import torch
 from model import Model 
 from torch_model import TorchModel 
 from mlrm import MLRM 
+from dtree import DecisionTree 
 
 from dataloader import load_data 
 from datagen import data_generator 
@@ -42,7 +43,7 @@ except:
 gt_data = load_data() 
 
 
-teacher_models = [MLRM()] 
+teacher_models = [MLRM(), DecisionTree()] 
 
 # train teachers 
 i = 0 
