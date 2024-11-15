@@ -3,9 +3,13 @@ import requests
 import pandas as pd 
 import numpy as np 
 
-import word2vec 
+#import word2vec 
 
 from fuzzywuzzy import process, fuzz # matching constituency 
+
+from pathlib import Path 
+
+file_dir = Path('.') 
 
 
 # categorical variable: constituency 
@@ -30,13 +34,17 @@ def _get_constituencies():
     # since "Wards" has multiple rows per constituency, there's some odd formatting so we have to do this 
     return [c.lower() for c in df[~df['Wards'].isna()]['Constituency'].values.tolist()] 
 
+constituencies = _get_constituencies() 
 constituency_approximate_distances = [6, 10, 4.5, 20, 13.5, 7, 1.5, 19, 9.5, 17, 7.5, 19, 17.5, 11, 14, 3.5, 11]
 
-def constituency_to_dist(con, constituencies=_get_constituencies()): 
-    con = process.extract(con, constituencies, scorer=fuzz.partial_ratio) 
-    idx = np.argmax(con) 
-    print("MATCHING '{}' WITH '{}'".format(con, constituencies[idx])) 
-    return constituency_approximate_distances[idx] 
+
+def constituency_to_dist(in_con): 
+    con = process.extract(in_con, constituencies, scorer=fuzz.partial_ratio) 
+    # con will be [(name, score), (name, score), ...] 
+    # score will be in descending order - first one is highest 
+    #idx = np.argmax(con) 
+    #print("MATCHING '{}' WITH '{}'".format(in_con, constituencies[idx])) 
+    return constituency_approximate_distances[constituencies.index(con[0][0])] 
 
 
 # TODO, but NOT NECESSARY TO IMPLEMENT THOUGH 
@@ -49,7 +57,7 @@ def _postalcode_to_constituency(postalcode): # utility function?
 def get_job_df(): 
     # let's load job data to see the possible jobs 
     job_data = {'name':[], 'salary':[], 'experience':[], 'responsibilities':[]} 
-    with open('job_data.txt', 'r') as fin: 
+    with open(str(file_dir / 'job_data.txt'), 'r') as fin: 
         def fingen(): 
             lines = fin.readlines() 
             for line in lines: 
@@ -71,7 +79,10 @@ def get_job_df():
                 finreadline() # key responsibilities 
                 responsibilities = [finreadline()[2:].strip() for _ in range(3)] # since all have 3 responsibilities 
                 
-                job_data['name'].append(name) 
+                if name == 'Orthoptist': 
+                    job_data['name'].append("Eye") # it's a horrible replacement but it's in the vectorizer's vocabulary 
+                else: 
+                    job_data['name'].append(name) 
                 job_data['salary'].append(salary) 
                 job_data['experience'].append(experience) 
                 job_data['responsibilities'].append(responsibilities) 
@@ -81,7 +92,7 @@ def get_job_df():
 
     job_df = pd.DataFrame(job_data) 
 
-    job_df
+    return job_df
 
 
 
@@ -92,14 +103,28 @@ experience_possibilities = ['Nursing Home / Community Treatment facility',
  'Intensive care unit',
  'Neonatal ICU / Nursery',
  'Day ward'] 
+experience_names = ['nurshingHome', 'emergencyClinic', 'ICU', 'nursery', 'dayWard'] 
 
-def load_data(): 
-    raw_df = pd.read_csv('nursedataset.csv', header=[1,2]) 
+def load_data(save_path=None): 
+    if save_path is not None: 
+        # just load from it save path! 
+        try: 
+            return pd.read_csv(save_path) 
+        except Exception as e: 
+            print("ERROR CALLING load_data('{}'): {}".format(save_path, str(e))) 
+            print("RE-LOADING DATA") 
+
+    raw_df = pd.read_csv(str(file_dir / 'nursedataset.csv'), header=[1,2]) 
     
     # clean the column names to make more sense 
     raw_df.columns = pd.Series([a[0].split('-')[0] if 'Unnamed' in a[1] else a[1] for a in raw_df.columns.values]) 
     
     raw_df = raw_df.drop(0, axis=0).reset_index().drop('index', axis=1) # ignore the first row of mandatory / non-mandatory fields 
+
+
+    global word2vec 
+    if 'word2vec' not in globals(): 
+        import word2vec as word2vec 
 
 
     # cleaned 
@@ -124,13 +149,13 @@ def load_data():
     # assume all possible values of experience are in experience_possibilities 
     # we should one-hot encode this 
     for epidx in range(len(experience_possibilities)): 
-        data['experience_{}'.format(epidx)] = vec_int(raw_df['Experience']==experience_possibilities[epidx]) 
+        data['experience_{}'.format(experience_names[epidx])] = vec_int(raw_df['Experience']==experience_possibilities[epidx]) 
 
     # specialization........ 
     job_df = get_job_df() 
     to_similarities = {} 
     for spec in raw_df['Specialisation'].unique(): 
-        to_similarities[spec] = [word2vec.get_similarity(spec, name) for name in job_df['name']]
+        to_similarities[spec] = [word2vec.filter_and_get_similarity(spec, name) for name in job_df['name']]
 
     sims = np.array([ to_similarities[spec] for spec in raw_df['Specialisation'] ]) 
 
@@ -141,10 +166,10 @@ def load_data():
 
     # singapore constituency 
     # approximate distance to Farrer Park Hospital, with ChatGPT (not completely reliable but we did a quick check and it makes some sense)
-    constituencies = _get_constituencies() 
+    #constituencies = _get_constituencies() 
     dists = [] 
     for con in raw_df['Postal Code ']: 
-        dists.append(constituency_to_dist(con, constituencies)) 
+        dists.append(constituency_to_dist(con)) 
     data['dist'] = dists # distance to Farrer Park Hospital 
 
 
@@ -184,7 +209,8 @@ def load_data():
     # assigned supervisor... probably not. 
 
     # supervisor's rating 
-    data['rating'] = raw_df['Supervisor\'s rating on Locum Perfomance\n Poor, Below Average, Average, Above Average, Excellent\n (1 '] 
+    vec_float = np.vectorize(lambda x:float(x))
+    data['rating'] = vec_float(raw_df['Supervisor\'s rating on Locum Perfomance\n Poor, Below Average, Average, Above Average, Excellent\n (1 ']) 
 
     # supervisor's comments - this is not like an int/float 
     data['comments'] = raw_df['Comments on \n Locum Perfomance'] 
@@ -210,10 +236,14 @@ class Dataloader():
         return Dataloader.constituencies[idx] 
     
     def __init__(self): 
-        self.data = load_data() 
+        self.data = load_data('cleaned_nursedf.csv') 
     
+    # TODO match data loading format for sklearn or tf/pytorch, whichever we are using 
 
 
+if __name__ == '__main__': 
+    df = load_data()
+    df.to_csv('cleaned_nursedf.csv')
 
 
 
