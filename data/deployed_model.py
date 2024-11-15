@@ -54,7 +54,8 @@ def get_score(nursedf, required_skill, required_specialization): # these are dic
 
 
 
-if __name__=='__main_' 
+
+
 
 load_model(default_model_path) 
 
