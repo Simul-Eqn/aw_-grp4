@@ -7,8 +7,7 @@ import pickle
 
 
 class MLRM(): 
-	default_x_cols = ['singaporean', 'race_chinese', 'race_malay', 'race_others',
-       'female', 'dist', 'IPSICU_match'] 
+	default_x_cols = ['singaporean', 'race_chinese', 'race_malay', 'race_others', 'female', 'dist', 'IPSICU_match'] 
 	
 	default_y_col = 'rating' 
 

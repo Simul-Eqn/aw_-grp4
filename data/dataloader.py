@@ -109,7 +109,7 @@ def load_data(save_path='cleaned_nursedf.csv'):
     if save_path is not None: 
         # just load from it save path! 
         try: 
-            return pd.read_csv(save_path) 
+            return pd.read_csv(save_path, index_col=0) 
         except Exception as e: 
             print("ERROR CALLING load_data('{}'): {}".format(save_path, str(e))) 
             print("RE-LOADING DATA") 
