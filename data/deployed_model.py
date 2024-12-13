@@ -58,6 +58,9 @@ def get_score(nursedf, required_skill, required_specialization): # these are dic
  
  
     return (experience_score*3/5 + specialization_score + model_score) 
+    # experience: 0.78 
+    # specialization: 1.5 
+    # model: 1 
 
 
 def info_to_nursedf(name:str, singaporean:bool, race:str, female:bool, experience:str, 
@@ -91,7 +94,7 @@ def info_to_nursedf(name:str, singaporean:bool, race:str, female:bool, experienc
     job_df = get_job_df() 
 
     for nidx in range(len(job_df['name'])): 
-        data['special_{}'.format(job_df.loc[nidx, 'name'])] = word2vec.filter_and_get_similarity(speciality, job_df.loc[nidx, 'name']) 
+        data['special_{}'.format(job_df.loc[nidx, 'name'])] = 2*word2vec.filter_and_get_similarity(speciality, job_df.loc[nidx, 'name']) 
     # NOTE: if we do MLRM or smtg, based on the job to be matched with, we'll only use one of these. 
 
 
@@ -132,6 +135,8 @@ def info_to_nursedf(name:str, singaporean:bool, race:str, female:bool, experienc
 
     # IN THE MODEL, IT SHLD JUST BE A BOOL OF WHETHER IT IS CORRECT ASSIGNED DEPARTMENT OR NOT 
     data['IPSICU_match'] = int(preferred_ICU == assigned_ICU) 
+
+    print("NURSE DATA:", data) 
 
     if to_dict: 
         return data 

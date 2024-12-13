@@ -61,10 +61,11 @@ vectorizer = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.b
 #print(locTags)
 print("Loading complete!") 
 
+'''
 #define function to get word similarities 
 def word_similarities(target_word, words): 
-    distances = vectorizer.distances(target_word, words) #ordered based on orders of vocabulary it seems
-    return distances #(distances-np.min(distances))/(np.max(distances)-np.min(distances))
+    similarities = vectorizer.similarities(target_word, words) #ordered based on orders of vocabulary it seems
+    return similarities #(distances-np.min(distances))/(np.max(distances)-np.min(distances))
 
 
 
@@ -78,10 +79,12 @@ def get_similarity(words1, words2):
             print(ex)
     return max_score 
 # this is cosine similarity, so it's 0.0 to 1.0 
+'''
 
 
-def filter_and_get_similarity(a, b): 
-    return get_similarity(filtertext(a), filtertext(b)) 
+def filter_and_get_similarity(a, b): # 1 is most similar, 0 is least, but usually this just outputs max 0.5 
+    return vectorizer.n_similarity(filtertext(a), filtertext(b)) 
+    #return get_similarity(filtertext(a), filtertext(b)) 
 
 
 
